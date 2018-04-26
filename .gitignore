@@ -1,0 +1,10 @@
+*.class
+*.log
+
+.idea
+target
+
+*.iml
+.DS_Store
+/bdp_tasks
+data
