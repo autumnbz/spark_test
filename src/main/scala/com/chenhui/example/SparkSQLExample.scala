@@ -107,7 +107,8 @@ object SparkSQLExample {
 
     // Count people by age
     df.groupBy("age").count().show()
-    df.groupBy('age.as("ss")).agg(org.apache.spark.sql.functions.count(col("age")).as("xs")).show()
+    df.groupBy('age.as("ss")).agg(org.apache.spark.sql.functions.count(col("age")).as("xs")).createOrReplaceTempView("test")
+    spark.sql("select * from test").show()
 
     // +----+-----+
     // | age|count|
@@ -138,7 +139,7 @@ object SparkSQLExample {
     df.createGlobalTempView("people")
 
     // Global temporary view is tied to a system preserved database `global_temp`
-    spark.sql("SELECT * FROM global_temp.people").show()
+    spark.sql("SELECT * FROM global_temp.people").toDF("age","sx").show()
     // +----+-------+
     // | age|   name|
     // +----+-------+
@@ -173,12 +174,16 @@ object SparkSQLExample {
 
     // Encoders for most common types are automatically provided by importing spark.implicits._
     val primitiveDS = Seq(1, 2, 3).toDS()
+    primitiveDS.createOrReplaceTempView("te")
+    spark.sql("select * from te").show()
     primitiveDS.map(_ + 1).collect() // Returns: Array(2, 3, 4)
 
     // DataFrames can be converted to a Dataset by providing a class. Mapping will be done by name
     val path = "examples/src/main/resources/people.json"
     val peopleDS = spark.read.json(path).as[Person]
     peopleDS.show()
+    peopleDS.select("age").show()
+    peopleDS.where("age is not null").select("age","name").groupBy("name").agg(org.apache.spark.sql.functions.sum(col("age"))*2).select("*").show()
     // +----+-------+
     // | age|   name|
     // +----+-------+
